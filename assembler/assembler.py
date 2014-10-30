@@ -2,8 +2,7 @@
 #Hack Assembler
 #Author: Mayank Mandava
 #Usage:
-#   As Library: assemble(list of asm statements)
-#   cmdline   : python assembler.py filename.asm
+#  assemble(list of asm statements)
 
 
 from asmparser import parse

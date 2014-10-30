@@ -1,6 +1,5 @@
 # Author: Mayank Mandava
 # Email: mayankmandava@gmail.com
-# Standalone usage: white_space_kallah.py filename.in [no-comments]
 
 def __removews(line):
     """Remove whitespaces from a string"""

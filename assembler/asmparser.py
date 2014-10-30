@@ -5,7 +5,14 @@
 import sys
 import string
 
-#contains all valid symbol characters
+# The parser turns assembler code into an AST
+# It also checks for any syntax errors
+# The ast uses the following symbols:
+# A = a-inst, C = c-inst, L = label
+# m/a = M or A pointing
+# SYM/DIR = addr is symbolic or numeric
+# The actual symbol for dest, comp and jmp
+
 
 def parse_error(statement):
     raise Exception("Syntax Error - Cannot parse\n{} at line {}".format(statement[1], statement[0]))

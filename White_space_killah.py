@@ -2,7 +2,7 @@
 
 # Author: Mayank Mandava
 # Email: mayankmandava@gmail.com
-# Standalone usage: white_space_kallah.py filename.in [no-comments]
+# Usage: White_space_kallah.py filename.in [no-comments]
 
 import tools.cmdlinetools as cmd
 import tools.white_space_killah as wsk

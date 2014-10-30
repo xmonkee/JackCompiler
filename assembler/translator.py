@@ -55,14 +55,14 @@ def dec2bin(dec, len):
 def translate(forest, sym_tbl):
    outcode = []
    for tree in forest:
-      if tree[0] == 'A':
+      if tree[0] == 'A': #A-Instruction
          if tree[1][0] == 'SYM':
             addr = sym_tbl[tree[1][1]]
          else: addr = tree[1][1] #direct addressing
          outcode.append('0'+ dec2bin(addr, 15))
-      if tree[0] == 'C':
+      if tree[0] == 'C': #C-Instruction
          dest,comp,jmp = tree[1]
-         a = '1' if comp[0]=='m' else '0'
+         a = '1' if comp[0]=='m' else '0' # M or A register access
          outcode.append('111' + a + 
                COMP_TABLE[comp[1]] + 
                DEST_TABLE[dest] + 

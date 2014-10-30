@@ -1,3 +1,6 @@
+#Author: Mayank Mandava
+
+
 def make_symbol_table(forest):
     tbl = { 
             'SP'    : 0,
