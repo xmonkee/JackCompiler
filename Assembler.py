@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #Hack Assembler
 #Author: Mayank Mandava
-#Usage: $Assembler.py filename.asm
+#Usage: ./Assembler.py filename.asm
+#Example: ./Assembler.py ./tests/Pong.asm
 
 from tools.white_space_killah import kill_white_spaces
 from assembler.assembler import assemble
