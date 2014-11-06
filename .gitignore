@@ -4,3 +4,4 @@
 *.hack
 *.in
 *.out
+tests/
