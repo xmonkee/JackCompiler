@@ -1,3 +1,8 @@
+#Author: Mayank Mandava
+#The functions are stored as M_name where name is the same as the parsed command. 
+#This allows us to introspect this module and map source commands directly to functions
+
+
 from functools import wraps
 
 location = {'constant':0, 'local':'LCL', 'argument':'ARG', 'this':'THIS', 'that':'THAT', 'pointer':3, 'temp':5, 'static':16}
@@ -56,6 +61,7 @@ def M_eqltgt(cond, count):
     out = """@SP AM=M-1 D=M  A=A-1 D=M-D @TRUE{count} D;{jcond}
     @SP A=M-1 M=0 @CONTINUE{count} 0;JMP
     (TRUE{count}) @SP A=M-1 M=-1 (CONTINUE{count})"""
+    #count is a running counter to avoid duplication of labels
     jcond = {'lt':'JLT', 'gt':'JGT', 'eq':'JEQ'}[cond]
     return out.format(jcond=jcond, count=count)
 

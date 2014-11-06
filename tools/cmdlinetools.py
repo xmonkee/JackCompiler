@@ -18,9 +18,13 @@ def parse_args(comp_args, flags=[], msg="Incorrect Usage"):
     return outdict      
 
 def change_extension(filename, outext):
+    import os.path
     """Change file.xyz to file.outext"""
-    k = filename.rfind('.')
-    if k < 0:
-        return filename + "." + outext
+    if os.path.isfile(filename):
+        k = filename.rfind('.')
+        if k < 0:
+            return os.path.normpath(filename + "." + outext)
+        else:
+            return os.path.normpath(filename[:k]+"." + outext)
     else:
-        return filename[:k]+"."+outext
+        return os.path.normpath(filename)+"."+outext
