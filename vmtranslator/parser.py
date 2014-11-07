@@ -9,13 +9,19 @@ def split_line(line):
 
 def parse(lines):
     forest = [] #output tree
-    count = 0 #keeps counter of comparison command labels
+    state = {'funcname':"", #name of current function
+            'count':1, #running count of ad-hoc labels for VM implementation
+            'line' : "", #The current source line
+            'classname': "" #The current class name
+            } #Any state in the compiler is stored here
     for line in lines:
         command, args = split_line(line)
-        if command in ['eq','lt','gt']:  #common function and counter
-            args = [command, count]
-            command = 'eqltgt'
-            count += 1
-        forest.append([command,args, line]) 
-        #we save the line for commenting output code
+        if command == 'class':
+           state['classname'] = args[0]
+        else:
+           if command == 'if-goto': command = 'if_goto'
+           if command in ['eq','lt','gt', 'call']: state['count'] += 1
+           if command in ['function']: state['funcname'] = args[0]
+           state['line'] = line 
+           forest.append([command, state.copy(), args]) 
     return forest

@@ -5,16 +5,18 @@
 import parser
 import mapping
 
-def translate(inlines, keepsource):
+def translate(inlines, isdir, keepsource):
     outlines = []
+    if isdir: 
+        outlines.append(mapping.init())
     forest = parser.parse(inlines)
     for tree in forest:
-        fn, args, sourceline = tree
-        if keepsource: outlines.append("//"+sourceline)
+        command, state, args = tree
+        if keepsource: outlines.append("//"+state['line'])
         try:
-            outlines.append(mapping.__dict__['M_'+fn](*args))
-            #The mapping is done by the function names. We don't need an external table
-            #This reduces coupling between the parser and the translator
-        except Exception as e:
-            raise Exception("Cannot parse: "+sourceline)
+            out = mapping.__dict__['M_'+command](state, *args)
+            outlines.append(mapping.__dict__['M_'+command](state, *args))
+            #The mapping is done by the function names
+        except KeyError as e:
+            raise Exception("Cannot parse: "+state['line'])
     return outlines
