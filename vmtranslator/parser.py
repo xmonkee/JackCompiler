@@ -1,5 +1,9 @@
 #Author: Mayank Mandava
 #This is the parser for the vm language.
+#It returns a list of 3 items for each line in the source
+#   1. The command
+#   2. The current state
+#   3. The command arguments
 
 
 def split_line(line):

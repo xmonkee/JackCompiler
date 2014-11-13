@@ -117,23 +117,17 @@ def M_call(state, fname, argc):
    # LCL = SP
    # (return address)
 
-   return """
-   @RETPOINT{count} D=A
-   @SP M=M+1 A=M-1 M=D
-   @LCL D=M
-   @SP M=M+1 A=M-1 M=D
-   @ARG D=M
-   @SP M=M+1 A=M-1 M=D
-   @THIS D=M
-   @SP M=M+1 A=M-1 M=D
-   @THAT D=M
-   @SP M=M+1 A=M-1 M=D
-   @SP D=M @{argc} D=D-A @5 D=D-A
-   @ARG M=D
-   @SP D=M @LCL M=D
-   @{fname} 0;JMP 
-   (RETPOINT{count})
-   """.format(count=state['count'], argc=argc, fname=fname) 
+   out = (
+       "@RETPOINT{count} D=A @SP M=M+1 A=M-1 M=D " + #Push return address
+       "@LCL D=M @SP M=M+1 A=M-1 M=D " + #Push LCL
+       "@ARG D=M @SP M=M+1 A=M-1 M=D " + #Push ARG
+       "@THIS D=M @SP M=M+1 A=M-1 M=D " + #Push THIS
+       "@THAT D=M @SP M=M+1 A=M-1 M=D " + #Push THAT 
+       "@SP D=M @{argc} D=D-A @5 D=D-A @ARG M=D " + #ARG = SP-n-5
+       "@SP D=M @LCL M=D " + #LCL = SP
+       "@{fname} 0;JMP " + #jump to claled function
+       "(RETPOINT{count}) ") #(return address)
+   return out.format(count=state['count'], argc=argc, fname=fname) 
 
 @breaklines
 def M_return(state):
