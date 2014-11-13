@@ -3,20 +3,20 @@
 #We optinally include the sources lines in our asm output
 
 import parser
-import mapping
+import codegen
 
 def translate(inlines, isdir, keepsource):
     outlines = []
-    if isdir: 
-        outlines.append(mapping.init())
+    if isdir: #called on a directory, we initialize and call Sys.init()
+        outlines.append(codegen.init()) 
     forest = parser.parse(inlines)
     for tree in forest:
         command, state, args = tree
         if keepsource: outlines.append("//"+state['line'])
         try:
-            out = mapping.__dict__['M_'+command](state, *args)
-            outlines.append(mapping.__dict__['M_'+command](state, *args))
-            #The mapping is done by the function names
+            #The mapping is done by the function names directly
+            #i.e. the 'push' command maps directly to codegen.M_push
+            outlines.append(codegen.__dict__['M_'+command](state, *args))
         except KeyError as e:
             raise Exception("Cannot parse: "+state['line'])
     return outlines

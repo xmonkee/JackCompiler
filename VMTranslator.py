@@ -32,7 +32,7 @@ def main():
 
     try: 
         outlines = translate(inlines, isdir, args['keep-source'])
-    except Exception as e: 
+    except Exception as e: #catch any parsing errors
         print e
         sys.exit(0)
     outname = cmd.change_extension(source,"asm")

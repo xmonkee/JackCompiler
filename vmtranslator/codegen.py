@@ -1,7 +1,8 @@
 #Author: Mayank Mandava
+#The code generation module. 
 #The functions are stored as M_name where name is the same as the parsed command. 
 #This allows us to introspect this module and map source commands directly to functions
-
+#The functions are called by the assembler with the current state(keeping track of the current class and function name etc) and the arguments for that particular command. 
 
 from functools import wraps
 
@@ -17,7 +18,8 @@ def breaklines(f):
 
 @breaklines
 def init():
-   out = "@256 D=A @SP M=D " #+ " @Sys.init 0;JMP"
+   """Initialize and Call Sys.init"""
+   out = "@256 D=A @SP M=D "
    return out  + M_call({'count':0}, 'Sys.init', 0)
 
 @breaklines
@@ -39,7 +41,7 @@ def M_pop(state, seg, val):
               cname=state['classname'], val=val)
     else:
        out = """@{val} D=A @{location} D=D+{AorM} @R13 M=D @SP AM=M-1 D=M @R13 A=M M=D""" 
-       AorM = 'A' if seg in {'pointer', 'temp', 'static'} else 'M'
+       AorM = 'A' if seg in {'pointer', 'temp'} else 'M'
        return out.format(val=val, location=location[seg], AorM=AorM)
 
 @breaklines

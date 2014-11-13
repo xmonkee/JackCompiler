@@ -3,7 +3,7 @@
 
 
 def split_line(line):
-    """Return a tuple containing the command(push, add) etc and the arguments as the second componenet (local 0, or nothing in case of add etc"""
+    """Return a tuple containing the command(push, add, etc) as it's first member and the arguments list as the second member (eg. [local 0] in case of push, or [] in case of add)"""
     words = line.split()
     return words[0], words[1:]
 
@@ -19,9 +19,9 @@ def parse(lines):
         if command == 'class':
            state['classname'] = args[0]
         else:
-           if command == 'if-goto': command = 'if_goto'
+           if command == 'if-goto': command = 'if_goto' 
            if command in ['eq','lt','gt', 'call']: state['count'] += 1
            if command in ['function']: state['funcname'] = args[0]
-           state['line'] = line 
+           state['line'] = line #for optionally comminting code with source
            forest.append([command, state.copy(), args]) 
     return forest
