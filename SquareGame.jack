@@ -22,24 +22,23 @@ class SquareGame {
 
     constructor SquareGame new(int x, SomClass b)  {
         let square = Square.new(0, 0, 30);
-   }
-   /*
         let direction = 0;
-
         return this;
-    }
+
+   }
 
     method void dispose() {
+        var char test;
         do square.dispose();
         do Memory.deAlloc(this);
         return;
     }
-
     method void run() {
         var char key;
         var boolean exit;
 
         let exit = false;
+
 
         while (~exit) {
             // waits for a key to be pressed.
@@ -76,9 +75,10 @@ class SquareGame {
                 do moveSquare();
             }
         }
+
             
         return;
-	}
+	} 
 
     method void moveSquare() {
         if (direction = 1) {
@@ -96,5 +96,5 @@ class SquareGame {
 
         do Sys.wait(5); // Delays the next movement.
         return;
-    } */
+    } 
 }

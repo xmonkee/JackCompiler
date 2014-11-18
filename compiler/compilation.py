@@ -76,20 +76,20 @@ class CompilationEngine:
         self.update(sub, ['keyword', 'identifier']) #type
         self.update_ident(sub)
         self.update_sym(sub,'(')
-        if self.tr.is_next_token(['keyword','identifier']): #at least 1 param
-            sub.append(self.compile_parameterList())
+        sub.append(self.compile_parameterList())
         self.update_sym(sub,')')
         sub.append(self.compile_subroutineBody())
         return {'subroutineDec': sub}
     
     def compile_parameterList(self):
         sub = []
-        self.update(sub, ['keyword', 'identifier']) #type
-        self.update_ident(sub)
-        while self.tr.is_next_token(['symbol'], [',']): #more params
-            self.update_sym(sub, ',') 
+        if not self.tr.is_next_token(['symbol'],[')']): #at least 1 param
             self.update(sub, ['keyword', 'identifier']) #type
-            self.update_ident(sub) #varname
+            self.update_ident(sub)
+            while self.tr.is_next_token(['symbol'], [',']): #more params
+                self.update_sym(sub, ',') 
+                self.update(sub, ['keyword', 'identifier']) #type
+                self.update_ident(sub) #varname
         return {'parameterList' : sub}
 
     def compile_subroutineBody(self):
@@ -108,10 +108,9 @@ class CompilationEngine:
         self.update_ident(sub) #varname
         while self.tr.is_next_token(['symbol'], [',']):
             self.update_sym(sub, ',') 
-            self.update(sub, ['keyword', 'identifier']) #type
             self.update_ident(sub) #varname
+        self.update_sym(sub, ';')
         return {'varDec':sub}
-
 
     def compile_statements(self):
         sub = []
@@ -141,13 +140,65 @@ class CompilationEngine:
         self.update_sym(sub,';')
         return {'letStatement':sub}
 
+    def compile_ifStatement(self):
+        sub = []
+        self.update_kw(sub,'if')
+        self.update_sym(sub, '(')
+        sub.append(self.compile_expression()) #guard expression
+        self.update_sym(sub, ')')
+        self.update_sym(sub, '{') #then branch
+        sub.append(self.compile_statements()) 
+        self.update_sym(sub, '}')
+        if self.tr.is_next_token(['keyword'],['else']): #else branch
+            self.update_kw(sub,'else')
+            self.update_sym(sub, '{')
+            sub.append(self.compile_statements()) 
+            self.update_sym(sub, '}')
+        return {'ifStatement': sub}
+
+    def compile_whileStatement(self):
+        sub = []
+        self.update_kw(sub,'while')
+        self.update_sym(sub, '(')
+        sub.append(self.compile_expression()) #guard expression
+        self.update_sym(sub, ')')
+        self.update_sym(sub, '{') #then branch
+        sub.append(self.compile_statements()) 
+        self.update_sym(sub, '}')
+        return {'whileStatement': sub}
+
+    def compile_doStatement(self):
+        sub = []
+        self.update_kw(sub, 'do')
+        self.update_ident(sub) #subroutine call
+        if self.tr.is_next_token(['symbol'],['(']): #function call
+            self.update_sym(sub,'(')
+            sub.append(self.compile_expressionList())
+            self.update_sym(sub,')')
+        elif self.tr.is_next_token(['symbol'],['.']): #classname|varname.method call
+            self.update_sym(sub,'.')
+            self.update_ident(sub) #method/function name
+            self.update_sym(sub,'(')
+            sub.append(self.compile_expressionList())
+            self.update_sym(sub,')')
+        self.update_sym(sub,';')
+        return {'doStatement': sub}
+
+    def compile_returnStatement(self):
+        sub = []
+        self.update_kw(sub,'return')
+        if not self.tr.is_next_token(['symbol'],[';']):
+            sub.append(self.compile_expression())
+        self.update_sym(sub,';')
+        return {'returnStatement':sub}
+
+
     def compile_expression(self):
         sub = []
         sub.append(self.compile_term())
         while self.tr.is_next_token(['symbol'],list("+-*/&|<>=")):
             self.update_sym(sub)
-            self.append(self.compile_term())
-        print sub
+            sub.append(self.compile_term())
         return {'expression':sub}
 
     def compile_term(self):
@@ -178,17 +229,18 @@ class CompilationEngine:
             self.update_sym(sub,'(')
             sub.append(self.compile_expression())
             self.update_sym(sub,')')
-        elif self.tr_is_next_token(['symbol'], ['-','~']): #unaryOp
+        elif self.tr.is_next_token(['symbol'], ['-','~']): #unaryOp
             self.update_sym(sub, '-', '~')
             sub.append(self.compile_term())
         return {'term':sub}
 
     def compile_expressionList(self):
         sub = []
-        sub.append(self.compile_expression())
-        while self.tr.is_next_token(['symbol'],[',']):
-            self.update_sym(sub, ',')
+        if not self.tr.is_next_token(['symbol'],[')']):
             sub.append(self.compile_expression())
+            while self.tr.is_next_token(['symbol'],[',']):
+                self.update_sym(sub, ',')
+                sub.append(self.compile_expression())
         return {'expressionList':sub}
 
     def update(self, sub, klist=None, vlist=None):

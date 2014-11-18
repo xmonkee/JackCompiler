@@ -7,24 +7,29 @@ from compilation import CompilationEngine
 
 def compile(intext):
     tokens = tokenize(intext)
-    print py2xml(tokens)
     compeng = CompilationEngine(tokens)
     return py2xml(compeng.compile_class())
     
 
-def py2xml(data):
+def py2xml(data, dist=0):
     """Converts nested python lists and dictionaries to XML"""
-    if isinstance(data, list):
-        out = ""
-        for item in data:
-            out += py2xml(item)
-        return out
     if isinstance(data, dict):
         out = ""
         for k in data.keys():
             out += "<%s>"%k 
-            if not isinstance(data[k],str): 
-                out+= "\n"
-            out += py2xml(data[k]) + "</%s>\n"%k 
+            if isinstance(data[k], list):
+               out += "\n"
+               out += py2xml(data[k], dist+2)
+               out += " "*dist + "</%s>"%k 
+            else:
+               out += py2xml(data[k], dist)
+               out += "</%s>"%k 
         return out
-    return data
+    elif isinstance(data, list):
+        out = ""
+        for item in data:
+            out += " "*dist + py2xml(item, dist) + '\n'
+        return out
+    else:
+        return data
+
