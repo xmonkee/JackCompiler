@@ -7,7 +7,6 @@ from compilation import compile_class
 
 def compile(intext):
     tokens = tokenize(intext)
-    print compile_class(tokens)
     return py2xml(compile_class(tokens))
     
 

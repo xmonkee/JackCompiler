@@ -61,9 +61,10 @@ def ifStatement(*params):
             Maybe(And(keyword('else'), symbol('{'), statements, symbol('}')))
             ))(*params)
 
-letStatement = And(keyword('let'), varName, 
+letStatement = NamedStruct('letStatement', 
+        And(keyword('let'), varName, 
         Maybe(And(symbol('['), expression, symbol(']'))), 
-        symbol('='), expression, symbol(';'))
+        symbol('='), expression, symbol(';')))
 
 statement = Or(letStatement, ifStatement, whileStatement, doStatement,
         returnStatement)

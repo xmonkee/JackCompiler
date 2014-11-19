@@ -4,7 +4,7 @@
 #Usage: ./JackCompiler.py source
 
 import tools.cmdlinetools as cmd
-from compiler.compiler import compile
+from compiler2.compiler import compile
 import sys
 import os
 
