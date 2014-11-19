@@ -196,7 +196,7 @@ class CompilationEngine:
     def compile_expression(self):
         sub = []
         sub.append(self.compile_term())
-        while self.tr.is_next_token(['symbol'],list("+-*/&|<>=")):
+        while self.tr.is_next_token(['symbol'],list("+-*/|=")+['&lt;','&gt;','&amp;']):
             self.update_sym(sub)
             sub.append(self.compile_term())
         return {'expression':sub}
