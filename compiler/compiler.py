@@ -3,12 +3,11 @@
 #Calls the tokenizer, parser and code generator
 
 from tokenizer import tokenize
-from compilation import CompilationEngine
+from compilation import compile_class
 
 def compile(intext):
     tokens = tokenize(intext)
-    compeng = CompilationEngine(tokens)
-    return py2xml(compeng.compile_class())
+    return py2xml(compile_class(tokens))
     
 
 def py2xml(data, dist=0):

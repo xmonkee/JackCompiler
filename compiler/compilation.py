@@ -1,269 +1,125 @@
 #Author: Mayank Mandava
 #Jack Compiler
 
-class TokenReader:
-    """Class used to keep track of tokens and our position in it"""
-    def __init__(self, tokens):
-        self.tokens = tokens['tokens']
-        self.length = len(self.tokens)
-        self.pos = 0
+from tokenreader import TokenReader
+from datafuncs import NamedStruct, And, Or, Maybe, Star, Atom
 
-    def has_more_tokens(self):
-        return self.pos < self.length
+def compile_class(tokens):
+    tr = TokenReader(tokens)
+    return class_(tr)
 
-    def is_next_token(self, k_list = None, v_list = None):
-        """if next token is k:v, checks whether
-        k is k_list and v is in v_list"""
-        tag = self.tokens[self.pos].keys()[0]
-        val = self.tokens[self.pos].values()[0]
-        isCompliant = True
-        if k_list is not None:
-            isCompliant = isCompliant and (tag in k_list)
-        if v_list is not None:
-            isCompliant = isCompliant and (val in v_list)
-        return isCompliant
+def symbol(sym):
+    return Atom('symbol', [sym])
 
+def keyword(kw):
+    return Atom('keyword', [kw])
 
-    def get(self, klist = None, vlist = None):
-        """Return the next tag and value from token list
-        By passig klist and vlist, we can optionally check
-        for syntax errors"""
-        assert self.has_more_tokens()
-        tag = self.tokens[self.pos].keys()[0]
-        val = self.tokens[self.pos].values()[0]
-        if klist is not None: 
-            assert tag in klist 
-            #checking we have the correct token
-        if vlist is not None: 
-            assert val in vlist 
-            #checking we have the correct token
-        self.pos += 1
-        return tag,val
+keywordConstant = Atom('keyword', ['true','false','null','this'])
+integerConstant = Atom('integerConstant')
+stringConstant = Atom('stringConstant')
+className = subroutineName = varName = Atom('identifier')
 
-class CompilationEngine:
-    """The recursive compilation engine for Jack"""
+unaryOp = Atom('symbol', ['-','~'])
+op = Atom('symbol', list("+-*/|=")+['&lt;','&gt;','&amp;'])
 
-    def __init__(self, tokens):
-        """Initialize token stream"""
-        self.tr = TokenReader(tokens)
+def expression(*params):
+    return NamedStruct('expression', And(term, Star(And(op, term))))(*params)
 
-    def compile_class(self):
-        sub = []
-        self.update_kw(sub,'class')
-        self.update_ident(sub) #classname
-        self.update_sym(sub, '{')
-        while self.tr.is_next_token(['keyword'], ['static', 'field']):
-            sub.append(self.compile_classVarDec()) 
-        while self.tr.is_next_token(['keyword'], ['constructor', 'function', 'method']):
-            sub.append(self.compile_subroutineDec())
-        self.update_sym(sub, "}")
-        return {'class':sub}
+expressionList = NamedStruct('expressionList', 
+        Maybe(
+            And(expression, 
+                Star(And(symbol(','), expression)))))
 
-    def compile_classVarDec(self):
-        sub = []
-        self.update_kw(sub, 'static', 'field') 
-        self.update(sub, ['keyword', 'identifier']) #type
-        self.update_ident(sub) #varname
-        while self.tr.is_next_token(['symbol'], [',']):
-            self.update_sym(sub, ',') 
-            self.update_ident(sub) #varname
-        self.update_sym(sub,';')
-        return {'classVarDec':sub}
-        
-    def compile_subroutineDec(self):
-        sub = []
-        self.update_kw(sub, 'constructor', 'function', 'method')
-        self.update(sub, ['keyword', 'identifier']) #type
-        self.update_ident(sub)
-        self.update_sym(sub,'(')
-        sub.append(self.compile_parameterList())
-        self.update_sym(sub,')')
-        sub.append(self.compile_subroutineBody())
-        return {'subroutineDec': sub}
-    
-    def compile_parameterList(self):
-        sub = []
-        if not self.tr.is_next_token(['symbol'],[')']): #at least 1 param
-            self.update(sub, ['keyword', 'identifier']) #type
-            self.update_ident(sub)
-            while self.tr.is_next_token(['symbol'], [',']): #more params
-                self.update_sym(sub, ',') 
-                self.update(sub, ['keyword', 'identifier']) #type
-                self.update_ident(sub) #varname
-        return {'parameterList' : sub}
+subroutineCall = Or(
+        And(subroutineName, 
+            symbol('('), expressionList, symbol(')')),
+        And(Or(className, varName), 
+            symbol('.'), 
+            subroutineName, 
+            symbol('('), expressionList, symbol(')')))
 
-    def compile_subroutineBody(self):
-        sub = []
-        self.update_sym(sub, '{')
-        while self.tr.is_next_token(['keyword'],['var']):
-            sub.append(self.compile_varDec())
-        sub.append(self.compile_statements())
-        self.update_sym(sub, '}')
-        return {'subroutineBody': sub}
-
-    def compile_varDec(self):
-        sub = []
-        self.update_kw(sub,'var')
-        self.update(sub, ['keyword', 'identifier']) #type
-        self.update_ident(sub) #varname
-        while self.tr.is_next_token(['symbol'], [',']):
-            self.update_sym(sub, ',') 
-            self.update_ident(sub) #varname
-        self.update_sym(sub, ';')
-        return {'varDec':sub}
-
-    def compile_statements(self):
-        sub = []
-        while self.tr.is_next_token(['keyword'], ['let', 'if', 'while', 'do', 'return']):
-            if self.tr.is_next_token(['keyword'],['let']):
-                sub.append(self.compile_letStatement())
-            elif self.tr.is_next_token(['keyword'],['if']):
-                sub.append(self.compile_ifStatement())
-            elif self.tr.is_next_token(['keyword'],['while']):
-                sub.append(self.compile_whileStatement())
-            elif self.tr.is_next_token(['keyword'],['do']):
-                sub.append(self.compile_doStatement())
-            elif self.tr.is_next_token(['keyword'],['return']):
-                sub.append(self.compile_returnStatement())
-        return {'statements':sub}
-    
-    def compile_letStatement(self):
-        sub = []
-        self.update_kw(sub,'let')
-        self.update_ident(sub) #varname
-        if self.tr.is_next_token(['symbol'],['[']): #array access
-            self.update_sym(sub,'[')
-            sub.append(self.compile_expression())
-            self.update_sym(sub,']')
-        self.update_sym(sub,'=')
-        sub.append(self.compile_expression())
-        self.update_sym(sub,';')
-        return {'letStatement':sub}
-
-    def compile_ifStatement(self):
-        sub = []
-        self.update_kw(sub,'if')
-        self.update_sym(sub, '(')
-        sub.append(self.compile_expression()) #guard expression
-        self.update_sym(sub, ')')
-        self.update_sym(sub, '{') #then branch
-        sub.append(self.compile_statements()) 
-        self.update_sym(sub, '}')
-        if self.tr.is_next_token(['keyword'],['else']): #else branch
-            self.update_kw(sub,'else')
-            self.update_sym(sub, '{')
-            sub.append(self.compile_statements()) 
-            self.update_sym(sub, '}')
-        return {'ifStatement': sub}
-
-    def compile_whileStatement(self):
-        sub = []
-        self.update_kw(sub,'while')
-        self.update_sym(sub, '(')
-        sub.append(self.compile_expression()) #guard expression
-        self.update_sym(sub, ')')
-        self.update_sym(sub, '{') #then branch
-        sub.append(self.compile_statements()) 
-        self.update_sym(sub, '}')
-        return {'whileStatement': sub}
-
-    def compile_doStatement(self):
-        sub = []
-        self.update_kw(sub, 'do')
-        self.update_ident(sub) #subroutine call
-        if self.tr.is_next_token(['symbol'],['(']): #function call
-            self.update_sym(sub,'(')
-            sub.append(self.compile_expressionList())
-            self.update_sym(sub,')')
-        elif self.tr.is_next_token(['symbol'],['.']): #classname|varname.method call
-            self.update_sym(sub,'.')
-            self.update_ident(sub) #method/function name
-            self.update_sym(sub,'(')
-            sub.append(self.compile_expressionList())
-            self.update_sym(sub,')')
-        self.update_sym(sub,';')
-        return {'doStatement': sub}
-
-    def compile_returnStatement(self):
-        sub = []
-        self.update_kw(sub,'return')
-        if not self.tr.is_next_token(['symbol'],[';']):
-            sub.append(self.compile_expression())
-        self.update_sym(sub,';')
-        return {'returnStatement':sub}
-
-
-    def compile_expression(self):
-        sub = []
-        sub.append(self.compile_term())
-        while self.tr.is_next_token(['symbol'],list("+-*/|=")+['&lt;','&gt;','&amp;']):
-            self.update_sym(sub)
-            sub.append(self.compile_term())
-        return {'expression':sub}
-
-    def compile_term(self):
-        sub = []
-        if self.tr.is_next_token(['integerConstant']):
-            self.update_int(sub)
-        elif self.tr.is_next_token(['stringConstant']):
-            self.update_str(sub)
-        elif self.tr.is_next_token(['keyword']):
-            self.update_kw(sub,'true','false','null','this')
-        elif self.tr.is_next_token(['identifier']): 
-            self.update_ident(sub)
-            if self.tr.is_next_token(['symbol'],['[']): #varname [ expression ]
-                self.update_sym(sub,'[')
-                sub.append(self.compile_expression())
-                self.update_sym(sub,']')
-            elif self.tr.is_next_token(['symbol'],['(']): #Subroutine call
-                self.update_sym(sub,'(')
-                sub.append(self.compile_expressionList())
-                self.update_sym(sub,')')
-            elif self.tr.is_next_token(['symbol'],['.']): #classname|varname.method call
-                self.update_sym(sub,'.')
-                self.update_ident(sub) #method/function name
-                self.update_sym(sub,'(')
-                sub.append(self.compile_expressionList())
-                self.update_sym(sub,')')
-        elif self.tr.is_next_token(['symbol'],['(']): #sub expression
-            self.update_sym(sub,'(')
-            sub.append(self.compile_expression())
-            self.update_sym(sub,')')
-        elif self.tr.is_next_token(['symbol'], ['-','~']): #unaryOp
-            self.update_sym(sub, '-', '~')
-            sub.append(self.compile_term())
-        return {'term':sub}
-
-    def compile_expressionList(self):
-        sub = []
-        if not self.tr.is_next_token(['symbol'],[')']):
-            sub.append(self.compile_expression())
-            while self.tr.is_next_token(['symbol'],[',']):
-                self.update_sym(sub, ',')
-                sub.append(self.compile_expression())
-        return {'expressionList':sub}
-
-    def update(self, sub, klist=None, vlist=None):
-        """Helper functions to get and parse next token pair
-        and update sub with that value"""
-        tag,val = self.tr.get(klist,vlist)
-        sub.append({tag:val})
-    def update_kw(self, sub, *vlist):
-        self.update(sub,['keyword'],None if vlist is () else vlist)
-    def update_ident(self, sub, *vlist):
-        self.update(sub,['identifier'],None if vlist is () else vlist)
-    def update_sym(self, sub, *vlist):
-        self.update(sub,['symbol'], None if vlist is () else vlist)
-    def update_int(self, sub, *vlist):
-        self.update(sub,['integerConstant'], None if vlist is () else vlist)
-    def update_str(self, sub, *vlist):
-        self.update(sub,['stringConstant'], None if vlist is () else vlist)
-        
+def term(*params):
+    return NamedStruct('term',
+            Or( integerConstant, stringConstant, keywordConstant,
+                And(varName, symbol('['), expression, symbol(']')), 
+                subroutineCall,
+                And(symbol('('), expression, symbol(')')), 
+                And(unaryOp, term), varName))(*params)
         
 
+returnStatement = NamedStruct('returnStatement', 
+        And( keyword('return'), 
+            Maybe(expression), symbol(';')))
 
+doStatement = NamedStruct('doStatement', 
+        And(keyword('do'), 
+            subroutineCall, 
+            symbol(';')))
 
-        
+def whileStatement(*params):
+    return NamedStruct('whileStatement', 
+            And(keyword('while'), symbol('('), 
+                expression, symbol(')'), 
+                symbol('{'), statements, symbol('}'))
+            )(*params)
 
+def ifStatement(*params):
+    return NamedStruct('ifStatement', 
+            And(keyword('if'), symbol('('), expression, symbol(')'), 
+            symbol('{'), statements, symbol('}'), 
+            Maybe(And(keyword('else'), symbol('{'), statements, symbol('}'))))
+            )(*params)
 
+letStatement = NamedStruct('letStatement', 
+        And(keyword('let'), varName, 
+        Maybe(And(symbol('['), expression, symbol(']'))), 
+        symbol('='), expression, symbol(';')))
+
+statement = Or(letStatement, ifStatement, 
+        whileStatement, doStatement, 
+        returnStatement)
+
+def statements(*params):
+    return NamedStruct('statements', 
+            Star(statement))(*params)
+
+type_ = Or(keyword('int'), 
+        keyword('char'), 
+        keyword('boolean'), 
+        className)
+
+varDec = NamedStruct('varDec', 
+        And(keyword('var'), type_, varName, 
+            Star(And(symbol(','), varName)), 
+            symbol(';')))
+
+subroutineBody = NamedStruct('subroutineBody', 
+        And(symbol('{'), 
+            Star(varDec), statements, 
+            symbol('}')))
+
+parameterList = NamedStruct('parameterList', 
+        Maybe(
+            And(type_, varName, 
+                Star(And(symbol(','), type_, varName)))))
+
+subroutineDec = NamedStruct('subroutineDec', 
+        And(Or(keyword('constructor'), keyword('function'), keyword('method')), 
+            Or(keyword('void'), type_), 
+            subroutineName, 
+            symbol('('), parameterList, symbol(')'), 
+            subroutineBody))
+
+classVarDec = NamedStruct('classVarDec', 
+        And(Or(keyword('static'), keyword('field')), type_, varName, 
+            Star(And(symbol(','), varName)),
+            symbol(';')))
+
+def class_(*params):
+    return NamedStruct('class', 
+            And(keyword('class'), className, 
+                symbol('{'),
+                Star(classVarDec), 
+                Star(subroutineDec),
+                symbol('}')))(*params)
 

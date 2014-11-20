@@ -26,10 +26,13 @@ def expression(*params):
     return NamedStruct('expression', And(term, Star(And(op, term))))(*params)
 
 expressionList = NamedStruct('expressionList', 
-        Maybe(And(expression, Star(And(symbol(','), expression)))))
+        Maybe(
+            And(expression, 
+                Star(And(symbol(','), expression)))))
 
 subroutineCall = Or(
-        And(subroutineName, symbol('('), expressionList, symbol(')')),
+        And(subroutineName, 
+            symbol('('), expressionList, symbol(')')),
         And(Or(className, varName), 
             symbol('.'), 
             subroutineName, 
@@ -44,43 +47,61 @@ def term(*params):
                 And(unaryOp, term), varName))(*params)
         
 
-returnStatement = NamedStruct('returnStatement', And( keyword('return'),
-    Maybe(expression), symbol(';')))
+returnStatement = NamedStruct('returnStatement', 
+        And( keyword('return'), 
+            Maybe(expression), symbol(';')))
 
-doStatement = NamedStruct('doStatement', And(keyword('do'), subroutineCall, 
-    symbol(';')))
+doStatement = NamedStruct('doStatement', 
+        And(keyword('do'), 
+            subroutineCall, 
+            symbol(';')))
 
 def whileStatement(*params):
-    return NamedStruct('whileStatement', And(keyword('while'), symbol('('), 
-        expression, symbol(')'), symbol('{'), statements, symbol('}')))(*params)
+    return NamedStruct('whileStatement', 
+            And(keyword('while'), symbol('('), 
+                expression, symbol(')'), 
+                symbol('{'), statements, symbol('}'))
+            )(*params)
 
 def ifStatement(*params):
     return NamedStruct('ifStatement', 
             And(keyword('if'), symbol('('), expression, symbol(')'), 
             symbol('{'), statements, symbol('}'), 
-            Maybe(And(keyword('else'), symbol('{'), statements, symbol('}')))
-            ))(*params)
+            Maybe(And(keyword('else'), symbol('{'), statements, symbol('}'))))
+            )(*params)
 
 letStatement = NamedStruct('letStatement', 
         And(keyword('let'), varName, 
         Maybe(And(symbol('['), expression, symbol(']'))), 
         symbol('='), expression, symbol(';')))
 
-statement = Or(letStatement, ifStatement, whileStatement, doStatement,
+statement = Or(letStatement, ifStatement, 
+        whileStatement, doStatement, 
         returnStatement)
 
 def statements(*params):
-    return NamedStruct('statements', Star(statement))(*params)
+    return NamedStruct('statements', 
+            Star(statement))(*params)
 
-type_ = Or(keyword('int'), keyword('char'), keyword('boolean'), className)
+type_ = Or(keyword('int'), 
+        keyword('char'), 
+        keyword('boolean'), 
+        className)
 
-varDec = NamedStruct('varDec', And(keyword('var'), type_, varName, 
-        Star(And(symbol(','), varName)), symbol(';')))
+varDec = NamedStruct('varDec', 
+        And(keyword('var'), type_, varName, 
+            Star(And(symbol(','), varName)), 
+            symbol(';')))
 
 subroutineBody = NamedStruct('subroutineBody', 
-        And(symbol('{'), Star(varDec), statements, symbol('}')))
+        And(symbol('{'), 
+            Star(varDec), statements, 
+            symbol('}')))
 
-parameterList = NamedStruct('parameterList', Maybe(And(type_, varName, Star(And(symbol(','), type_, varName)))))
+parameterList = NamedStruct('parameterList', 
+        Maybe(
+            And(type_, varName, 
+                Star(And(symbol(','), type_, varName)))))
 
 subroutineDec = NamedStruct('subroutineDec', 
         And(Or(keyword('constructor'), keyword('function'), keyword('method')), 
