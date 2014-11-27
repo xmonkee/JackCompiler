@@ -3,6 +3,8 @@
 #Jack Compiler
 #Usage: ./JackCompiler.py source
 
+#This program is the command line interface to the JackCompiler. It parses the user input and passes the file text to the compile module found in the compilersubdirectory. That's where all the interesting bits are
+
 import tools.cmdlinetools as cmd
 from compiler.compiler import compile
 import sys
