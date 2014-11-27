@@ -1,8 +1,20 @@
 #Author: Mayank Mandava
 #Jackcompiler: Code generator
 
+# This module takes the ast produced by the parser and converts it to vm code
+# It employs 3 modules: 
+#  symboltable: to maintain the variable symbol table
+#  astreader: for easy processing of ast
+#  codewriter: writes the actual vm code
+# Function names correspond to sections of the grammar
+# All functions take 2 variables here: state and ast
+# State is threaded into each function carrying information from 
+# previous functions like classname, functionnames, and the sybol table
+# ast is the part of the ast relevant to each function
+
 from symboltable import SymbolTable
 from astreader import AstReader
+from codewriter import CodeWriter
 
 def codegen(ast):
    """Top level code generator function"""
@@ -12,13 +24,14 @@ def codegen(ast):
 
 class CodeGenerator():
    def __init__(self):
-      self.vmcode = ""
+      self.codewriter = CodeWriter()
 
    def codegen(self, ast):
       """Entry point into codeGenerator.Starts the recursive compilation and 
       returns the final result to calling function"""
       self.class_({},ast.next_sec())
-      return self.vmcode
+      print self.codewriter.get_code()
+      return self.codewriter.get_code()
 
    def class_(self, state, ast):
       """Create class symbol table and pass on control to classVarDec and 
@@ -45,12 +58,11 @@ class CodeGenerator():
       return
 
    def subroutineDec(self, state, ast):
-      fkind = ast.next_val() #constructor, function, method
-      frettype = ast.next_val() #retune type
-      fname = ast.next_val() #function name
-      state= state.copy() #we keep a local frame for each function
+      statelocal = state.copy() #we keep a local frame for each function
       statelocal['sym_tbl'] = SymbolTable(state['sym_tbl']) 
-      statelocal['fkind'] = fkind
+      statelocal['fkind'] = ast.next_val() #constructor, function, method
+      statelocal['fype']= ast.next_val() #return type
+      statelocal['fname'] = ast.next_val() #function name
       #new symbol table with parent linkage
       ast.next() #'('
       self.parameterList(statelocal,ast.next_sec())
@@ -75,12 +87,37 @@ class CodeGenerator():
    def subroutineBody(self, state, ast):
       ast.next() # '{'
       while(ast.get_key() == 'varDec'):
-         self.varDec(self, state, ast)
+         self.varDec(state, ast.next_sec())
+      self.codewriter.function(state)
+      self.statements(state, ast.next_sec())
       return
-
 
    def varDec(self, state, ast):
+      ast.next() #'var'
+      var_type = ast.next_val()
+      var_name = ast.next_val()
+      state['sym_tbl'].add(var_name, 'local', var_type)
+      while(ast.next_val() != ';'):
+         var_name = ast.next_val()
+         state['sym_tbl'].add(var_name, 'local', var_type)
       return
+
+   def statements(self, state, ast):
+      xstatements = {
+            'returnStatement':self.returnStatement,
+            'ifStatement':self.ifStatement,
+            'letStatement':self.letStatement,
+            'whileStatement':self.whileStatement,
+            'doStatement':self.doStatement }
+      xstatement = ast.get_key()
+      while(xstatement is not None):
+         xstatements[xstatment](state, ast.next_sec())
+         xstatement = ast.get_key()
+      return
+
+  def doStatement(self, state, ast):
+     
+
 
       
       
