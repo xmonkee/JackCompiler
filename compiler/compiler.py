@@ -3,11 +3,15 @@
 #Calls the tokenizer, parser and code generator
 
 from tokenizer import tokenize
-from compilation import compile_class
+from parser import parse_class
+from codegenerator import codegen
+import pprint
 
 def compile(intext):
     tokens = tokenize(intext)
-    return py2xml(compile_class(tokens))
+    ast = parse_class(tokens)
+    vmcode = codegen(ast)
+    return py2xml(ast), vmcode;
     
 
 def py2xml(data, dist=0):

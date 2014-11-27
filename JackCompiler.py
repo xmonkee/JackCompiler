@@ -28,10 +28,13 @@ def main():
         for fname in files:
             with open(fname, 'r') as f:
                 intext = f.read()
-            outtext = compile(intext)
-            outname = cmd.change_extension(fname,"xml")
-            with open(outname,'w') as ofile:
-               ofile.write(outtext)
+            outxml, outvm = compile(intext)
+            outxname = cmd.change_extension(fname,"xml")
+            outvname = cmd.change_extension(fname,"vm2")
+            with open(outxname,'w') as ofile:
+               ofile.write(outxml)
+            with open(outvname,'w') as ofile:
+               ofile.write(outvm)
     except Exception as e: #catch any parsing errors
         print e
         raise
