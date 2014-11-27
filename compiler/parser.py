@@ -4,7 +4,7 @@
 from tokenreader import TokenReader
 from datafuncs import NamedStruct, And, Or, Maybe, Star, Atom
 
-def compile_class(tokens):
+def parse_class(tokens):
     tr = TokenReader(tokens)
     return class_(tr)
 
