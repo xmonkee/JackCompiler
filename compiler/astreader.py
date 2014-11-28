@@ -12,17 +12,21 @@ class AstReader():
          if self.pos < len(self.ast):
             return self.ast[self.pos]
          else:
-            return {None:None}
+            return None
       else:
          return self.ast
          
 
    def get_key(self):
       "return the key of the first ast"
+      if self.get() is None:
+         return None
       return self.get().keys()[0]
 
    def get_val(self):
       "return the key of the first ast"
+      if self.get() is None:
+         return None
       return self.get().values()[0]
 
    def next(self):

@@ -30,21 +30,22 @@ expressionList = NamedStruct('expressionList',
             And(expression, 
                 Star(And(symbol(','), expression)))))
 
-subroutineCall = Or(
+subroutineCall = NamedStruct('subroutineCall', Or(
         And(subroutineName, 
             symbol('('), expressionList, symbol(')')),
         And(Or(className, varName), 
             symbol('.'), 
             subroutineName, 
-            symbol('('), expressionList, symbol(')')))
+            symbol('('), expressionList, symbol(')'))))
 
 def term(*params):
     return NamedStruct('term',
             Or( integerConstant, stringConstant, keywordConstant,
-                And(varName, symbol('['), expression, symbol(']')), 
+                NamedStruct('arrayAccess', And(varName, symbol('['), expression, symbol(']'))), 
                 subroutineCall,
-                And(symbol('('), expression, symbol(')')), 
-                And(unaryOp, term), varName))(*params)
+                NamedStruct('bracketExp', And(symbol('('), expression, symbol(')'))), 
+                NamedStruct('unaryOpTerm', And(unaryOp, term)), 
+                varName))(*params)
         
 
 returnStatement = NamedStruct('returnStatement', 

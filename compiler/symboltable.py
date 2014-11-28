@@ -24,7 +24,7 @@ class SymbolTable():
    def lookup(self, name):
       if self.symtbl.has_key(name):
          return self.symtbl[name]
-      if self.parent.lookup(name) is not None:
+      if self.parent is not None:
          return self.parent.lookup(name)
       return None
 
@@ -35,4 +35,9 @@ class SymbolTable():
       return
 
    def count(self, var_kind):
-      return self.var_counter[var_kind]
+      count = self.var_counter[var_kind]
+      parent = self.parent
+      while(parent is not None):
+         count += parent.var_counter[var_kind]
+         parent = parent.parent
+      return count
