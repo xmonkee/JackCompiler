@@ -1,3 +1,30 @@
+#Author: Mayank Mandava
+#Jackcompiler
+
+#This file contains the grammatical meta-structures of the jack grammar
+#specification. The most basic is the Atom: a single element that is not 
+#composed of any other elements and is directly to be found in the token stream
+#The other structures are: 
+#   And: element1 element2 ...
+#   Or: element1 | element2 ...
+#   NamedStructure: those elements that produce a nested structure like class, expression etc
+#   Maybe: (element)?
+#   Star: element*
+
+# Each function produces a parsing function with 2 capabilities, 
+# apply and check.
+# Apply is the default behaviour. It will absorb tokens from the 
+# token stream and compile them and return the result
+# Check will only verify that the particular structure is actually 
+# present on the token stream. Most structures only check the 
+# first token but the And structure can look ahead to any number 
+# of elements, depending on the setting LD. 
+# Here, we have set LD to 2 since the grammar is LL(1) at most. 
+# Both APPLY and CHECK will eventually trickly down to Atom. All APPLY 
+# calls are guarded with an assert so all syntax is checked automatically
+# the ld setting is also trickled down, so if there is a nested AND and LD is s# set to 2, the next 3 tokens get checked.
+
+
 APPLY = 1
 CHECK = 2
 

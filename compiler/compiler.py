@@ -11,7 +11,7 @@ def compile(intext):
     tokens = tokenize(intext)
     ast = parse_class(tokens)
     vmcode = codegen(ast)
-    return py2xml(ast), vmcode;
+    return vmcode;
     
 
 def py2xml(data, dist=0):

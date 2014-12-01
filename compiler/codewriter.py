@@ -3,6 +3,7 @@
 
 #This module writes the actual vm code
 #functions correspond to vm commands
+#It encapsulates the running otuput stream in self.vmcode
 
 from symboltable import Variable
 
@@ -74,7 +75,6 @@ class CodeWriter(object):
          self.push('constant', ord(letter))
          self.call("String", "appendChar", 2)
       return
-
 
    def get_code(self):
       return self.vmcode

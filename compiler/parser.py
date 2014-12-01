@@ -1,6 +1,25 @@
 #Author: Mayank Mandava
 #Jack Compiler
 
+#################################################################
+# The following is a straightforward translation of the Jack
+# grammar into parsing function. 
+
+# Instead of writing each function manually, we rely on the 
+# meta-structures in datafuncs.py to translate the grammar
+# This lets us define our grammar declaratively instead of 
+# procedurally and the resulting code is much shorter
+
+# Each element here is a function that 
+# can take the token reader object and parse it recursively.
+# The elements are arranged bottom up to avoid calling functions
+# that haven't been defined yet. In case recursion or mutual 
+# recursion is unavoidable, the elemnet is defined explicitly
+# as a function with def because that python allows mutual
+# recursion in def structures. 
+
+###############################################################
+
 from tokenreader import TokenReader
 from datafuncs import NamedStruct, And, Or, Maybe, Star, Atom
 
@@ -13,6 +32,8 @@ def symbol(sym):
 
 def keyword(kw):
     return Atom('keyword', [kw])
+
+
 
 keywordConstant = Atom('keyword', ['true','false','null','this'])
 integerConstant = Atom('integerConstant')

@@ -1,5 +1,6 @@
 #Author: Mayank Mandava
 #JackCompiler: AST Reader
+#Helper class to read stuff from the AST
 
 class AstReader():
    def __init__(self, ast):
