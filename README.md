@@ -1,11 +1,15 @@
 #Jack Stack
 Author: Mayank Mandava
+
 Email: mayankmandava at gee mail
 
 ##JackCompiler.py
    This is the top level command line interface to the compiler. 
+
    Usage: ./JackCompiler.py source
+
    Source can be either individual .jack file or a directory containing jack files
+
    Each .jack file is compiled to a .xml file
 
 ###Modules within compiler folder:
@@ -29,22 +33,29 @@ Email: mayankmandava at gee mail
 
 ###Folders:
  compiler/ - contains the tokenizer and compiler modules
+
  tools/ - utility tools including command line parsing and white space removal
 
 #Other programs:
 
 ##VMTranslator.py
  This program translates a .vm file or a direcotry containing several .vm files into a hack .asm file
+
  Usage: ./VMTranslator.py source [keep-source]
  source is either a single .vm file or a directory containing .vm files
+
  If source is a direcory, the output is saved in source.asm next to the directory and the program is initialized by setting SP and calling Sys.init
+
  If the source is a file, SP is not set and Sys.init is not called. 
  The optional keep-source flag, if supplied, will preserve the source vm commands as comments in the asm code
 
 ###Files:
    VMTranslator.py: Command line program to translate .vm files 
+
    vmtranslator/codegen.py : code generation
+
    vmtranslator/parser.py : parser
+
    vmtranslator/vmtranslator.py : the actual translator, calls parser and maps commands to the code generator
 
 ###Requirements:
@@ -52,15 +63,21 @@ Email: mayankmandava at gee mail
 
 ##Assembler.py
  This program is used to compile Hack assembly code to Hack machine language
+
  Usage: ./Assembler.py filename.asm
 
 ##White_space_killah.py
  This program is used to remove whitespaces from source files
+
  Usage: ./White_space_killah.py infile.in [no-comments]
 
 ###Folders:
+
  vmtranslator/ - the code for the translator and parser
+
  assembler/ - the code for the assembler, parser, symbol table and translator
+
  tools/ - utility tools including command line parsing and white space removal
+
  tests/ - test files
 
