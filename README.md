@@ -1,6 +1,6 @@
 #Jack Stack
 Author: Mayank Mandava
-Email: mayankmandava@gmail.com
+Email: mayankmandava at gee mail
 
 ##JackCompiler.py
    This is the top level command line interface to the compiler. 
